@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+    <!-- Webpage Title -->
+    <title>Home | 코린이 사전</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <!-- Font Awesome CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='mystyle.css') }}" rel="stylesheet">
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+    <style>
+        .table {
+            width: 80%;
+            max-width: 800px;
+            margin: auto;
+            table-layout: fixed;
+        }
+
+        .table th {
+            border-top-style: none;
+        }
+
+        td {
+            background-color: white;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        td > a, a:visited, a:hover, a:active {
+            color: black;
+        }
+
+        thead:first-child tr:first-child th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        thead:first-child tr:first-child th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody:last-child tr:last-child td:first-child {
+            border-radius: 0 0 0 10px;
+        }
+
+        tbody:last-child tr:last-child td:last-child {
+            border-radius: 0 0 10px 0;
+        }
+    </style>
+    <script>
+
+        $(document).ready(function () {
+            get_posts()
+        })
+
+        function toggle_like(word_id) {
+            console.log(word_id)
+            let $a_like = $(`#${word_id} a[aria-label='bookmark']`)
+            let $i_like = $a_like.find("i")
+            if ($i_like.hasClass("fa-bookmark")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/update_bookmark",
+                    data: {
+                        word_id_give: word_id,
+                        action_give: "unlike"
+                    },
+                    success: function (response) {
+                        console.log("unlike")
+                        $i_like.addClass("fa-bookmark-o").removeClass("fa-bookmark")
+                    }
+                })
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "/update_bookmark",
+                    data: {
+                        word_id_give: word_id,
+                        action_give: "like"
+                    },
+                    success: function (response) {
+                        console.log("like")
+                        $i_like.addClass("fa-bookmark").removeClass("fa-bookmark-o")
+                    }
+                })
+            }
+        }
+
+        function post() {
+            let word = $("#word").val()
+            let meaning = $("#meaning").val()
+            $.ajax({
+                type: "POST",
+                url: "/words",
+                data: {
+                    word_give: word,
+                    meaning_give: meaning
+                },
+                success: function (response) {
+                    window.location.reload()
+                }
+            })
+        }
+
+        function get_posts() {
+            $("#tbody-box").empty()
+            $.ajax({
+                type: "GET",
+                url: "/words",
+                data: {},
+                success: function (response) {
+                    console.log(response)
+                    if (response["result"] === "success") {
+                        let words = response["words"]
+                        for (let i = 0; i < words.length; i++) {
+                            let word = words[i]
+                            // 삼항 연산자
+                            let class_bookmark = word['bookmark_by_me'] ? "fa-bookmark" : "fa-bookmark-o"
+                            let html_temp = `<tr id="${word['_id']}">
+                                                <td><a href="#">${word['word']}</a></td>
+                                                <td>${word['meaning']}</td>
+                                                <td><a class="level-item is-sparta" aria-label="bookmark" onclick="toggle_like('${word['_id']}', 'bookmark')">
+                                                <span class="icon is-small"><i class="fa ${class_bookmark}" aria-hidden="true"></i></span></a></td>
+                                            </tr>`
+
+                            $("#tbody-box").append(html_temp)
+                        }
+                    }
+                }
+            })
+        }
+
+        function bookmark() {
+           // 하아...
+        }
+
+
+    </script>
+</head>
+<body>
+    <nav class="navbar is-fixed-top is-white" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/words">
+                <img src="{{ url_for('static', filename='logo.png') }}">
+                <strong class="is-sparta"
+                        style="font-family: 'Stylish', sans-serif;font-size: larger;">CORINI</strong>
+            </a>
+        </div>
+    </nav>
+    <input id="word" class="input is-normal" type="text" placeholder="word">
+    <input id="meaning" class="input is-normal" type="text" placeholder="meaning">
+    <button onclick="post()">등록</button>
+    <button onclick="bookmark()">즐겨찾기</button>
+    <table class="table">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col" style="width:30%">WORD</th>
+            <th scope="col">MEANING</th>
+            <th scope="col" style="width:10%"></th>
+        </tr>
+        </thead>
+        <tbody id="tbody-box">
+            <tr id="word-word">
+                <td><a href="#">word</a></td>
+                <td>a single </td>
+                <td>a single </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
