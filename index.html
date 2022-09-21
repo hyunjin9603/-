@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>F반 1조 | 코린이사전</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <!-- 구글폰트 -->
+    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: "Stylish", sans-serif;
+        }
+
+        .header{
+            max-width: 100%;
+            height: 70px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+
+        .top_logo{
+            width: 300px;
+            height: 70px;
+            margin-top: 15px;
+        }
+
+        .logo_img {
+            width: 120px;
+            height: 60px;
+            background-size: contain;
+        }
+
+        .menu{
+            list-style-type: none;
+            width: 300px;
+            height: 70px;
+            margin-top: 20px;
+            display: flex;
+        }
+
+        .menu_image {
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            padding: 0px;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        #login_btn{
+            width: 80px;
+            height: 40px;
+            margin-top: 20px;
+            margin-left: 180px;
+        }
+
+        .line {
+            width: 99%;
+            border: grey solid 1px;
+        }
+
+        .contents {
+            max-width: 1200px;
+            margin: 20px auto 0px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .post_box {
+            width: 600px;
+            margin: 20px auto;
+            padding: 10px;
+            border: grey solid;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #submit_btn{
+            width: 80px;
+            margin-top: 15px;
+            margin-left: 45%;
+        }
+
+        .search_box {
+            width: 70%;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        .search_box > input {
+            border: grey solid 1px;
+        }
+
+        .table {
+            width: 80%;
+            max-width: 800px;
+            margin: auto;
+            table-layout: fixed;
+        }
+
+        .table th {
+            border-top-style: none;
+        }
+
+        td {
+            background-color: white;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            show_coding();
+        });
+        function show_coding() {
+            $('#coding_list').empty()
+            $.ajax({
+                type: "GET",
+                url: "/coding",
+                data: {},
+                success: function (response) {
+                    let rows = response['coding']
+                    for (let i = 0; i < rows.length; i++) {
+                        let coding = rows[i]['coding']
+                        let meaning = rows[i]['meaning']
+                        let num = rows[i]['num']
+                        let done = rows[i]['done']
+
+                        let temp_html = ``
+                        if (done == 0) {
+                            temp_html = `<tr>
+                                <td><a href="">${coding}</a></td>
+                                <td>${meaning}</td>
+                                <td><a href="bookmark_coding(${num})"><img src="/static/images/not_bookmarked.png" width="25px" height="25px"></a></td>
+                                <td><button type="button" onclick="deleteRow(this);">X</button>
+                                </td>
+                            </tr>`
+                        } else {
+                            temp_html = `<tr>
+                                <td><a href="">${coding}</a></td>
+                                <td>${meaning}</td>
+                                <td><a href="restore_coding(${num})"><img src="/static/images/bookmark_logo.png" width="25px" height="25px"></a></td>
+                                <td><button type="button" onclick="deleteRow(this);">X</button>
+                                </td>
+                            </tr>`
+                        }
+                        $('#coding_list').append(temp_html)
+                    }
+                }
+            });
+        }
+
+        function save_coding() {
+            let coding = $('#coding').val()
+            let meaning = $('#meaning').val()
+            $.ajax({
+                type: "POST",
+                url: "/coding",
+                data: {coding_give: coding, meaning_give: meaning},
+
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+        function bookmark_coding(num) {
+            $.ajax({
+                type: "POST",
+                url: "/coding/bookmark",
+                data: {'num_give': num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+        }
+
+        function restore_coding(num) {
+            $.ajax({
+                type: "POST",
+                url: "/coding/restore",
+                data: {'num_give':num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            });
+
+        }
+    function deleteRow(ths){
+            var ths = $(ths);
+            ths.parents("tr").remove();
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="top_logo">
+            <a href="/static/templates/index.html"><img class="logo_img" src="/static/images/logo_red.png"></a>
+        </div>
+        <ul class="menu">
+            <li><a href="/static/templates/index.html"><img class="menu_image" src="/static/images/home_logo.png"></a></li>
+            <li><a href="/static/templates/bookmark.html"><img class="menu_image" src="/static/images/bookmark_logo.png"></a></li>
+            <li><img class="menu_image" src="/static/images/profile_logo.png"></li>
+        </ul>
+        <button id="login_btn" type="button" class="btn btn-outline-secondary">로그인</button>
+    </div>
+    <hr class="line">
+
+    <div class="contents">
+
+        <h1><코린이 단어장></h1>
+        <div class="post_box">
+            <div class="voca_input">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-sizing-default">용어</span>
+                    <input id="coding" type="text" class="form-control" aria-label="Sizing example input"
+                           aria-describedby="inputGroup-sizing-default">
+                </div>
+            </div>
+            <div class="voca_input">
+                <div class="input-group">
+                    <span class="input-group-text">의미</span>
+                    <textarea id="meaning" class="form-control" aria-label="With textarea"></textarea>
+                </div>
+            </div>
+            <button onclick="save_coding()" id="submit_btn" type="button" class="btn btn-outline-secondary">저장하기</button>
+        </div>
+        <div class="search_box d-flex justify-content-center">
+            <input id="input-word" class="form-control" style="margin-right: 0.5rem">
+            <button type="button" class="btn btn-outline-secondary">검색</button>
+        </div>
+        <table class="table">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col" style="width:20%">용어</th>
+                <th scope="col">의미</th>
+                <th scope="col" style="width: 10%">북마크</th>
+                <th scope="col" style="width:10%">삭제</th>
+            </tr>
+            </thead>
+            <tbody id="coding_list">
+            <tr>
+                <td><a href="/wp/vocab/detail/offshore?status_give=old">offshore</a></td>
+                <td>situated at sea some distance from the shore.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-nearby">
+                <td><a href="/wp/vocab/detail/nearby?status_give=old">nearby</a></td>
+                <td>not far away; close.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-coffee">
+                <td><a href="/wp/vocab/detail/coffee?status_give=old">coffee</a></td>
+                <td>the shrub which yields coffee seeds, native to the Old World tropics.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-note">
+                <td><a href="/wp/vocab/detail/note?status_give=old">note</a></td>
+                <td>a short informal letter or written message.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-gam">
+                <td><a href="/wp/vocab/detail/gam?status_give=old">gam</a></td>
+                <td>a leg, especially a woman&#39;s.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-cat">
+                <td><a href="/wp/vocab/detail/cat?status_give=old">cat</a></td>
+                <td>a small domesticated carnivorous mammal with soft fur, a short snout, and retractile claws. It is
+                    widely kept as a pet or for catching mice, and many breeds have been developed.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-study">
+                <td><a href="/wp/vocab/detail/study?status_give=old">study</a></td>
+                <td>the devotion of time and attention to gaining knowledge of an academic subject, especially by means
+                    of books.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-atheist">
+                <td><a href="/wp/vocab/detail/atheist?status_give=old">atheist</a></td>
+                <td>a person who disbelieves or lacks belief in the existence of God or gods.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-dumb">
+                <td><a href="/wp/vocab/detail/dumb?status_give=old">dumb</a></td>
+                <td>temporarily unable or unwilling to speak.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-name">
+                <td><a href="/wp/vocab/detail/name?status_give=old">name</a></td>
+                <td>(in the UK) an insurance underwriter belonging to a Lloyd&#39;s syndicate.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-money">
+                <td><a href="/wp/vocab/detail/money?status_give=old">money</a></td>
+                <td>a current medium of exchange in the form of coins and banknotes; coins and banknotes collectively.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-generate">
+                <td><a href="/wp/vocab/detail/generate?status_give=old">generate</a></td>
+                <td>produce or create.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            <tr id="word-apple">
+                <td><a href="/wp/vocab/detail/apple?status_give=old">apple</a></td>
+                <td>the round fruit of a tree of the rose family, which typically has thin green or red skin and crisp
+                    flesh.
+                </td>
+                <td><img src="../static/images/bookmark_logo.png"></td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+</body>
